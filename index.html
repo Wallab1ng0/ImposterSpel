@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Imposter - Spelet</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            color: #667eea;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+
+        .screen {
+            display: none;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        .transition-screen {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .transition-screen h2 {
+            color: #667eea;
+            font-size: 2em;
+            margin-bottom: 30px;
+        }
+
+        .transition-screen p {
+            color: #666;
+            font-size: 1.2em;
+            margin-bottom: 30px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .category-btn {
+            padding: 20px;
+            background: #f5f5f5;
+            color: #333;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .category-btn:hover {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: transparent;
+            transform: translateY(-2px);
+        }
+
+        .card-container {
+            perspective: 1000px;
+            margin: 30px 0;
+            height: 300px;
+        }
+
+        .card {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.6s;
+            cursor: pointer;
+        }
+
+        .card.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .card-front {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .card-back {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            transform: rotateY(180deg);
+        }
+
+        .card-front-content {
+            font-size: 3em;
+            text-align: center;
+        }
+
+        .card-back-content {
+            font-size: 2em;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .clue {
+            font-size: 0.6em;
+            margin-top: 20px;
+            opacity: 0.95;
+            font-weight: normal;
+        }
+
+        .player-info {
+            text-align: center;
+            color: #666;
+            margin-bottom: 20px;
+            font-size: 18px;
+        }
+
+        .instruction {
+            text-align: center;
+            color: #999;
+            font-size: 14px;
+            margin-top: 15px;
+            font-style: italic;
+        }
+
+        .back-btn {
+            background: #6c757d;
+            margin-top: 15px;
+        }
+
+        .back-btn:hover {
+            background: #5a6268;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+
+            .category-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .card-container {
+                height: 250px;
+            }
+
+            .card-front-content {
+                font-size: 2.5em;
+            }
+
+            .card-back-content {
+                font-size: 1.5em;
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎭 IMPOSTER</h1>
+
+        <!-- Start skärm -->
+        <div id="startScreen" class="screen active">
+            <div class="input-group">
+                <label for="playerCount">Hur många ska spela?</label>
+                <input type="number" id="playerCount" min="2" max="20" value="4" placeholder="Ange antal spelare">
+            </div>
+            <button onclick="selectCategory()">Fortsätt</button>
+        </div>
+
+        <!-- Kategori val -->
+        <div id="categoryScreen" class="screen">
+            <h2 style="text-align: center; margin-bottom: 30px; color: #333;">Välj kategori</h2>
+            <div class="category-grid">
+                <button class="category-btn" onclick="startGame('clashRoyale')">⚔️ Clash Royale</button>
+                <button class="category-btn" onclick="startGame('yrken')">👷 Yrken</button>
+                <button class="category-btn" onclick="startGame('platser')">🌍 Platser</button>
+                <button class="category-btn" onclick="startGame('djur')">🦁 Djur</button>
+                <button class="category-btn" onclick="startGame('mat')">🍕 Mat</button>
+                <button class="category-btn" onclick="startGame('kändisar')">⭐ Kändisar</button>
+                <button class="category-btn" onclick="startGame('hushållssaker')">🏠 Hushållssaker</button>
+                <button class="category-btn" onclick="startGame('spel')">🎮 Spel</button>
+            </div>
+            <button class="back-btn" onclick="showScreen('startScreen')">Tillbaka</button>
+        </div>
+
+        <!-- Spel skärm -->
+        <div id="gameScreen" class="screen">
+            <div class="player-info" id="playerInfo"></div>
+            <div class="card-container">
+                <div class="card" id="card" onclick="flipCard()">
+                    <div class="card-face card-front">
+                        <div class="card-front-content">🎴</div>
+                    </div>
+                    <div class="card-face card-back">
+                        <div class="card-back-content" id="cardContent"></div>
+                    </div>
+                </div>
+            </div>
+            <p class="instruction">Klicka på kortet för att vända det</p>
+            <button id="nextBtn" onclick="goToTransition()">Nästa spelare</button>
+            <button class="back-btn" onclick="resetGame()">Avsluta spel</button>
+        </div>
+
+        <!-- Övergångsskärm -->
+        <div id="transitionScreen" class="screen">
+            <div class="transition-screen">
+                <h2>🔄 Byt spelare</h2>
+                <p>Ge telefonen/datorn till nästa spelare</p>
+                <p id="nextPlayerInfo" style="font-weight: bold; color: #667eea;"></p>
+                <button onclick="showCardForNextPlayer()">Visa mitt kort</button>
+                <button class="back-btn" onclick="resetGame()">Avsluta spel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const gameData = {
+            clashRoyale: {
+                words: ["Skeletons", "Fire Spirit", "Ice Spirit", "Bats", "Zap", "Giant Snowball", "Archers", "Knight", "Cannon", "Skeleton Barrel", "Bomber", "Spear Goblins", "Goblins", "Minions", "Royal Giant", "Royal Recruits", "Electro Spirit", "Barbarians", "Minion Horde", "Skeleton Dragons", "Arrows", "Tesla", "Berserker", "Goblin Gang", "Rascals", "Mortar", "Dart Goblin", "Earthquake", "Fireball", "Mini P.E.K.K.A", "Musketeer", "Valkyrie", "Battle Ram", "Hog Rider", "Bomb Tower", "Inferno Tower", "Elixir Collector", "Giant", "Wizard", "Royal Hogs", "Zappies", "Goblin Cage", "Three Musketeers", "Heal Spirit", "Ice Golem", "Mega Minion", "Elixir Golem", "Battle Healer", "Suspicious Bush", "Barbarian Barrel", "Wall Breakers", "Goblin Barrel", "Guards", "Skeleton Army", "Clone", "Dark Prince", "Freeze", "Baby Dragon", "Poison", "Hunter", "Goblin Drill", "Witch", "Prince", "Bowler", "Executioner", "Cannon Cart", "Giant Skeleton", "Lightning", "Goblin Giant", "X-Bow", "P.E.K.K.A", "Electro Dragon", "Golem", "Rune Giant", "The Log", "Princess", "Ice Wizard", "Royal Ghost", "Bandit", "Fisherman", "Electro Wizard", "Inferno Dragon", "Phoenix", "Magic Archer", "Lumberjack", "Night Witch", "Mother Witch", "Ram Rider", "Graveyard", "Sparky", "Mega Knight", "Lava Hound", "Miner", "Goblin Machine", "Little Prince", "Archer Queen", "Golden Knight", "Skeleton King", "Monk", "Mighty Miner", "Goblinstein", "Boss Bandit", "Spirit Empress", "Royal Chef", "Dagger Duchess", "Cannoneer", "Tower Princess", "Royal Delivery", "Tornado", "Rage", "Mirror", "Rocket", "Barbarian Hut", "Goblin Hut", "Tombstone", "Furnace", "Electro Giant", "Goblin Demolisher", "Vines", "Goblin Curse", "Void"],
+                clues: ["Dödens armé", "Eldfluga", "Vinterväsen", "Luftpirater", "Åsknedslag", "Snöstorm", "Tvillingpilar", "Riddare utan häst", "Kanonvagn", "Dödens leverans", "Bombfällare", "Spjutgänget", "Gröngölingar", "Luftburna", "Kanonjätte", "Kunglig infanteri", "Elektrisk ande", "Barbarhord", "Luftinvasion", "Skelettdrakar", "Regn av pilar", "Dold torn", "Raseriattack", "Goblinmaffia", "Lilla ligan", "Belägringsvapen", "Pilprick", "Jordbävning", "Eldklot", "Liten mördare", "Långdistans", "Virvelvind", "Stridsvagn", "Grisryttare", "Bombfästning", "Smältverk", "Elixirfabrik", "Jättefot", "Trollkarlshatt", "Grisstampede", "Elchock", "Goblinfälla", "Tremusketörer", "Hälsovård", "Isblock", "Större flygande", "Elixirblob", "Läkande aura", "Dödlig buske", "Rullande död", "Väggsprängare", "Goblinfällan", "Sköldvakter", "Skelettvåg", "Kloningskonst", "Mörk anfall", "Frysmagi", "Drakunge", "Giftmoln", "Hagelgevär", "Underjordisk borr", "Häxmagi", "Riddarspjut", "Stenrullare", "Avrättare", "Kanonvagn", "Dödens explosion", "Himmelsblixt", "Goblinbärare", "Långdistanssiege", "Robotkrigare", "Kedjeblixt", "Stenjätte", "Runmagi", "Timmerstock", "Långdistansprinsessa", "Isbeard", "Osynlig kunglig", "Rånarstorm", "Krokfiskare", "Elektrisk trollkarl", "Draksmälta", "Fågeluppståndelse", "Böjdpil", "Ilskeflaska", "Nattfladdermöss", "Grisförbannelse", "Lassoryttare", "Skelettkyrkogård", "Eldkastare", "Riddarsprång", "Lavaflygare", "Underjordisk lönnmördare", "Goblinrobot", "Lillprins", "Bågskyttedrottning", "Gyllene svärd", "Skelettkung", "Tre reflektioner", "Mäktig grävare", "Frankenstein-goblin", "Bossrånare", "Andekejsarinna", "Kunglig kock", "Dolk-hertiginna", "Kanonmästare", "Tornprinsessa", "Kunglig paketleverans", "Vindvirvel", "Ilskaelixir", "Spegling", "Raketspräng", "Barbarläger", "Goblinhydda", "Gravsten", "Eldugn", "Elektrisk jätte", "Goblinrivare", "Taggiga rankor", "Goblinförbannelse", "Tomhet"]
+            },
+            yrken: {
+                words: ["Lärare", "Brandman", "Programmerare", "Läkare", "Snickare", "Pilot", "Kock", "Polis", "Elektriker", "Fotograf", "Journalist", "Arkitekt", "Sjuksköterska", "Bibliotekarie", "Ekonom", "Lastbilschaufför", "Advokat", "Veterinär", "Servitör", "Musiker", "Mekaniker", "Tandläkare", "Ingenjör", "Skådespelare", "Forskare"],
+                clues: ["Katederpredikant", "Rökdykare", "Syntaxfel", "Livräddare", "Spikmästare", "Himmelslots", "Smakarkitekt", "Lagväktare", "Strömförare", "Ljusfångare", "Scoopjägare", "Byggnadsritare", "Vårdande hand", "Tystnadsväktare", "Siffertrollkarl", "Lastbilsnomad", "Rättvisans röst", "Djurens läkare", "Tallriksbalanserare", "Tonsättare", "Skruvdragare", "Tandborrare", "Konstruktör", "Scenmagiker", "Kunskapssökare"]
+            },
+            platser: {
+                words: ["Stockholm", "Göteborg", "Malmö", "New York", "Tokyo", "Paris", "Rom", "Kairo", "Sydney", "London", "Berlin", "Los Angeles", "Reykjavik", "Barcelona", "Dubai", "Bangkok", "Köpenhamn", "Venedig", "Prag", "Toronto", "Oslo", "Istanbul", "Shanghai", "Helsingfors", "Amsterdam"],
+                clues: ["Kunglig huvudstad", "Västkustens pärla", "Brofästning", "Stora äpplet", "Neonsamurai", "Kärlekens stad", "Evig stad", "Faraonernas arv", "Segel i hamn", "Dimma över Themsen", "Porten till frihet", "Stjärnornas trottoar", "Varmbad i norr", "Oavslutad katedral", "Ökenmirakel", "Guld i gryningen", "Lille havsfröken", "Kanalernas drottning", "Öl och broar", "Lönnbladets torn", "Fjordens vagga", "Två kontinenter", "Pärlemor i öst", "Bastu och midnattssol", "Cykelhuvudstad"]
+            },
+            djur: {
+                words: ["Hund", "Katt", "Elefant", "Lejon", "Tiger", "Zebra", "Pingvin", "Orm", "Kanin", "Delfin", "Björn", "Apa", "Häst", "Sköldpadda", "Fiskmås", "Räv", "Uggla", "Val", "Känguru", "Ekorre", "Papegoja", "Krokodil", "Får", "Gris", "Ko"],
+                clues: ["Människans skugga", "Nio liv", "Minne som en...", "Lejonkung", "Tandad katt", "Randig häst", "Antarktisk frack", "Ormbett", "Morotsälskare", "Flipperakrobat", "Honungsdieb", "Banankung", "Ridkompis", "Långsam vinnare", "Fiskstjälande fågel", "Röd päls, listig", "Visdomens fågel", "Havets jätte", "Hoppa i påse", "Nötknäckare", "Pratmakare", "Dödens rulle", "Ullfabrik", "Rosa gris", "Mjölkautomat"]
+            },
+            mat: {
+                words: ["Pizza", "Sushi", "Hamburgare", "Pasta", "Tacos", "Sallad", "Falafel", "Lasagne", "Curry", "Kebab", "Soppa", "Stek", "Ramen", "Pannkakor", "Chili con carne", "Risotto", "Korv med bröd", "Fisk och potatis", "Wok", "Grillspett", "Tårta", "Piroger", "Smörgås", "Pytt i panna", "Omelett"],
+                clues: ["Italiensk cirkel", "Risrulle", "Amerikansk klassiker", "Pastarör", "Mexikansk wrap", "Grön tallrik", "Kikärtsboll", "Lager på lager", "Indisk hetta", "Kebab i bröd", "Flytande måltid", "Stekt kött", "Japansk nudelsoppa", "Söt pannkaka", "Böna och kött", "Riscreme", "Korv i bröd", "Fiskfredag", "Wokad blandning", "Kött på pinne", "Födelsedagstopp", "Rysk ficka", "Smörgåstårta", "Kvarlevor", "Äggomelett"]
+            },
+            kändisar: {
+                words: ["Taylor Swift", "Zlatan Ibrahimović", "Beyoncé", "Elon Musk", "Greta Thunberg", "Ariana Grande", "Keanu Reeves", "Rihanna", "Brad Pitt", "Emma Watson", "Ed Sheeran", "Leonardo DiCaprio", "Selena Gomez", "Tom Cruise", "Lady Gaga", "Billie Eilish", "Dwayne Johnson", "Morgan Freeman", "Jennifer Lopez", "Chris Hemsworth", "Robert Downey Jr.", "Angelina Jolie", "Shakira", "Post Malone", "Kanye West"],
+                clues: ["Kärleksdagbok", "Lejonet från Balkan", "Single Ladies-dans", "Twitterkung", "Klimatkrigare", "Höga toner", "Sorglös hjälte", "Paraply", "Fight Club-regel", "Trollkarlsdotter", "Matematik i musik", "Isbergssänkare", "Vårbrott", "Farligt affärsman", "Köttklänning", "Grönt hår", "Familjefar i action", "Guds röst", "Bronx till Hollywood", "Åskgud", "Järnmask", "Lara Croft", "Höfterna ljuger inte", "Ansiktstatueringar", "Kanye är geni"]
+            },
+            hushållssaker: {
+                words: ["Stol", "Bord", "Lampa", "Soffa", "Kudde", "Diskmaskin", "Spegel", "Gardiner", "Matta", "TV", "Kylskåp", "Spis", "Dammsugare", "Klocka", "Säng", "Tandborste", "Mikrovågsugn", "Toalett", "Kastrull", "Mugg", "Tallrik", "Sked", "Kniv", "Hårtork", "Strykjärn"],
+                clues: ["Sittpinne", "Middagsaltare", "Mörkrets fiende", "Sittande moln", "Drömfyllning", "Diskorkester", "Sanningens spegel", "Fönsterdräkt", "Golvets filt", "Rörlig tavla", "Kylt skåp", "Eld under kastrull", "Dammfälla", "Tidsmätare", "Sömnfabrik", "Tandpolerare", "Sekundvärmare", "Sittande vatten", "Såsens hem", "Kaffekärl", "Tallriksbas", "Grötsticka", "Brödskärare", "Hårvind", "Veckutjämnare"]
+            },
+            spel: {
+                words: ["Minecraft", "Fortnite", "The Legend of Zelda", "Super Mario", "Call of Duty", "Among Us", "FIFA", "Overwatch", "League of Legends", "Counter-Strike", "Valorant", "Elden Ring", "The Sims", "GTA V", "Rocket League", "Red Dead Redemption 2", "God of War", "Skyrim", "Assassin's Creed", "Hogwarts Legacy", "PUBG", "Apex Legends", "Stardew Valley", "Animal Crossing", "Halo"],
+                clues: ["Blockvärld", "Bygg och dö", "Svärdsmästare", "Svamprike", "Krigszon", "Ventilationsmord", "Fotbollsimperium", "Hjälteskytt", "Fem mot fem", "Källarstrid", "Agentduell", "Elden vaknar", "Livssimulator", "Kriminell stad", "Fotboll med bilar", "Vilda västern", "Gudarnas krig", "Drakskrik", "Dold klinga", "Trolldomsskola", "Slutzon", "Legendarisk kamp", "Bondgårdsliv", "Öliv", "Ringvärld"]
+            }
+        };
+
+        let currentPlayers = 0;
+        let currentPlayerIndex = 0;
+        let imposterIndex = 0;
+        let currentWord = '';
+        let currentClue = '';
+        let cardFlipped = false;
+
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function selectCategory() {
+            const players = parseInt(document.getElementById('playerCount').value);
+            if (players < 2) {
+                alert('Det måste vara minst 2 spelare!');
+                return;
+            }
+            currentPlayers = players;
+            showScreen('categoryScreen');
+        }
+
+        function startGame(category) {
+            const data = gameData[category];
+            const randomIndex = Math.floor(Math.random() * data.words.length);
+            currentWord = data.words[randomIndex];
+            currentClue = data.clues[randomIndex];
+            imposterIndex = Math.floor(Math.random() * currentPlayers);
+            currentPlayerIndex = 0;
+            cardFlipped = false;
+
+            showScreen('gameScreen');
+            showNextPlayer();
+        }
+
+        function flipCard() {
+            if (!cardFlipped) {
+                document.getElementById('card').classList.add('flipped');
+                cardFlipped = true;
+            }
+        }
+
+        function goToTransition() {
+            if (!cardFlipped) {
+                alert('Vänd på kortet först!');
+                return;
+            }
+            
+            currentPlayerIndex++;
+            
+            if (currentPlayerIndex >= currentPlayers) {
+                alert('Alla har sett sina ord! Nu börjar rundan - lycka till med att hitta impostern! 🎭');
+                resetGame();
+                return;
+            }
+            
+            document.getElementById('nextPlayerInfo').textContent = 
+                `Spelare ${currentPlayerIndex + 1} av ${currentPlayers}`;
+            showScreen('transitionScreen');
+        }
+
+        function showCardForNextPlayer() {
+            cardFlipped = false;
+            const card = document.getElementById('card');
+            card.classList.remove('flipped');
+            
+            const isImposter = currentPlayerIndex === imposterIndex;
+            
+            document.getElementById('playerInfo').textContent = 
+                `Spelare ${currentPlayerIndex + 1} av ${currentPlayers}`;
+            
+            const cardContent = document.getElementById('cardContent');
+            
+            if (isImposter) {
+                cardContent.innerHTML = `
+                    🎭 DU ÄR IMPOSTER!
+                    <div class="clue">Ledtråd: ${currentClue}</div>
+                `;
+            } else {
+                cardContent.textContent = currentWord;
+            }
+
+            const nextBtn = document.getElementById('nextBtn');
+            if (currentPlayerIndex === currentPlayers - 1) {
+                nextBtn.textContent = 'Starta rundan!';
+                nextBtn.onclick = () => {
+                    alert('Alla har sett sina ord! Nu börjar rundan - lycka till med att hitta impostern! 🎭');
+                    resetGame();
+                };
+            } else {
+                nextBtn.textContent = 'Nästa spelare';
+                nextBtn.onclick = goToTransition;
+            }
+            
+            showScreen('gameScreen');
+        }
+
+        function showNextPlayer() {
+            cardFlipped = false;
+            const card = document.getElementById('card');
+            card.classList.remove('flipped');
+            
+            const isImposter = currentPlayerIndex === imposterIndex;
+            
+            document.getElementById('playerInfo').textContent = 
+                `Spelare ${currentPlayerIndex + 1} av ${currentPlayers}`;
+            
+            const cardContent = document.getElementById('cardContent');
+            
+            if (isImposter) {
+                cardContent.innerHTML = `
+                    🎭 DU ÄR IMPOSTER!
+                    <div class="clue">Ledtråd: ${currentClue}</div>
+                `;
+            } else {
+                cardContent.textContent = currentWord;
+            }
+
+            const nextBtn = document.getElementById('nextBtn');
+            if (currentPlayerIndex === currentPlayers - 1) {
+                nextBtn.textContent = 'Starta rundan!';
+                nextBtn.onclick = () => {
+                    alert('Alla har sett sina ord! Nu börjar rundan - lycka till med att hitta impostern! 🎭');
+                    resetGame();
+                };
+            } else {
+                nextBtn.textContent = 'Nästa spelare';
+                nextBtn.onclick = goToTransition;
+            }
+        }
+
+        function resetGame() {
+            showScreen('startScreen');
+            currentPlayerIndex = 0;
+            cardFlipped = false;
+        }
+    </script>
+</body>
+</html>
